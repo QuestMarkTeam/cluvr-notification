@@ -24,7 +24,19 @@ services:
         condition: service_healthy
     networks:
       - cluvr-net
-
+  mongo:
+    restart: always
+    image: mongo:6.0
+    container_name: cluvr-mongo
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })" ]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "27017:27017"
+    networks:
+      - cluvr-net
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
