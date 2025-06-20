@@ -1,4 +1,4 @@
- pipeline {
+pipeline {
     agent any
 
     environment {
@@ -17,7 +17,7 @@
             steps {
                 echo '✅ Generating .env and sending to EC2...'
                 withCredentials([
-                    string(credentialsId: 'jwt.secret.key', variable: 'jwt.secret.key'),
+                    string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
                     string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
                     string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
                     string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
@@ -25,13 +25,12 @@
                     string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
                 ]) {
                     sh """
-                        echo "DB_HOST=${jwt.secret.key}" > .env
-                        echo "DB_HOST=${DB_HOST}" > .env
+                        echo "jwt.secret.key=${JWT_SECRET_KEY}" > .env
+                        echo "DB_HOST=${DB_HOST}" >> .env
                         echo "DB_PORT=${DB_PORT}" >> .env
                         echo "DB_NAME=${DB_NAME}" >> .env
                         echo "DB_USERNAME=${DB_USERNAME}" >> .env
                         echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
-
 
                         scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${NOTI_EC2_IP}:${ENV_PATH}
                     """
@@ -74,7 +73,7 @@ docker stop ${ECR_REPO} || true
 docker rm ${ECR_REPO} || true
 
 echo "✅ 새 컨테이너 실행"
-docker run -d --name ${ECR_REPO} -p 8080:8080 --env-file .env ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+docker run -d --name ${ECR_REPO} -p 8080:8080 --env-file ${ENV_PATH} ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
 EOF
 """
             }
