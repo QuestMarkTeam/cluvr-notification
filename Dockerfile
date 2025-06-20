@@ -7,6 +7,6 @@ RUN gradle bootJar
 # Use OpenJDK 17 image to run the application
 FROM openjdk:17
 WORKDIR /app
-COPY --from=builder /app/build/libs/cluvr-batch-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /app/build/libs/cluvr-notifications-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
