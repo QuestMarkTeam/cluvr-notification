@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Spring Boot application (cluvr-noti)
+  spring:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cluvr-noti
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - jwt.secret.key=your-very-secret-key
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:mysql://$DB_HOST:$DB_PORT/$DB_NAME?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      #      mysql:
+      #        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - cluvr-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # 내부 AMQP 통신 포트 (코드에서 이 포트로 접속함)
+      - "15672:15672"   # 웹 대시보드 GUI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+networks:
+  cluvr-net:
+    driver: bridge
