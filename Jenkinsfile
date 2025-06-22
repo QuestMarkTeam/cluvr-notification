@@ -27,8 +27,8 @@ pipeline {
                     sh """
                         echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" > .env
                         echo "SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8" > .env
-                        echo "DB_USERNAME=${DB_USERNAME}" >> .env
-                        echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
+                        echo "SPRING_DATASOURCE_USERNAME=${DB_USERNAME}" >> .env
+                        echo "SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}" >> .env
 
                         scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${EC2_IP}:${ENV_PATH}
                     """
