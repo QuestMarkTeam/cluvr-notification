@@ -33,6 +33,20 @@ services:
       - "27017:27017"
     networks:
       - cluvr-net
+
+  # Redis service
+  redis:
+    restart: always
+    image: redis:7.2
+    container_name: redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      retries: 5
+    ports:
+      - "6379:6379"
+    networks:
+      - cluvr-net
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
