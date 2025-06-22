@@ -7,7 +7,7 @@ pipeline {
         ECR_REGISTRY = '617373894870.dkr.ecr.us-west-2.amazonaws.com'
         ECR_REPO = 'cluvr-noti'
         IMAGE_TAG = 'latest'
-        NOTI_EC2_IP = '54.218.142.135'
+        EC2_IP = '54.218.142.135'
         ENV_PATH = '/home/ubuntu/.env'
     }
 
@@ -25,14 +25,12 @@ pipeline {
                     string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
                 ]) {
                     sh """
-                        echo "jwt.secret.key=${JWT_SECRET_KEY}" > .env
-                        echo "DB_HOST=${DB_HOST}" >> .env
-                        echo "DB_PORT=${DB_PORT}" >> .env
-                        echo "DB_NAME=${DB_NAME}" >> .env
-                        echo "DB_USERNAME=${DB_USERNAME}" >> .env
-                        echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
+                        echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" > .env
+                        echo "SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8" > .env
+                        echo "SPRING_DATASOURCE_USERNAME=${DB_USERNAME}" >> .env
+                        echo "SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}" >> .env
 
-                        scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${NOTI_EC2_IP}:${ENV_PATH}
+                        scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${EC2_IP}:${ENV_PATH}
                     """
                 }
             }
@@ -61,7 +59,7 @@ pipeline {
             steps {
                 echo '✅ Deploying on remote EC2...'
                 sh """
-ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa ubuntu@${NOTI_EC2_IP} << 'EOF'
+ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa ubuntu@${EC2_IP} << 'EOF'
 echo "✅ ECR 로그인"
 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
