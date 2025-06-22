@@ -64,6 +64,25 @@ pipeline {
                 echo '✅ Deploying on remote EC2...'
                 sh """
 ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa ubuntu@${EC2_IP} << 'EOF'
+
+echo "✅ Docker 네트워크 cluvr-net 확인"
+docker network create cluvr-net 2>/dev/null || echo "already exists"
+
+echo "✅ MongoDB 실행"
+if [ -z "\$(docker ps -q -f name=cluvr-mongo)" ]; then
+    docker run -d --name cluvr-mongo --network cluvr-net -p 27017:27017 --restart unless-stopped mongo:6.0
+else
+    echo "Mongo already running"
+fi
+
+echo "✅ RabbitMQ 실행"
+if [ -z "\$(docker ps -q -f name=rabbitmq)" ]; then
+    docker run -d --name rabbitmq --network cluvr-net -p 5672:5672 -p 15672:15672 --restart unless-stopped \
+        -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest rabbitmq:3-management
+else
+    echo "RabbitMQ already running"
+fi
+
 echo "✅ ECR 로그인"
 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
@@ -75,7 +94,15 @@ docker stop ${ECR_REPO} || true
 docker rm ${ECR_REPO} || true
 
 echo "✅ 새 컨테이너 실행"
-docker run -d --name ${ECR_REPO} -p 8080:8080 --env-file ${ENV_PATH} ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+docker run -d --name ${ECR_REPO} \
+    --network cluvr-net \
+    --env-file ${ENV_PATH} \
+    -p 8080:8080 \
+    --restart unless-stopped \
+    ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+
+echo "🎉 배포 완료: http://${EC2_IP}:8080"
+
 EOF
 """
             }
