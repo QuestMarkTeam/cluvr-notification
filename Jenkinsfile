@@ -31,8 +31,8 @@ pipeline {
                         echo "SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8" >> .env
                         echo "SPRING_DATASOURCE_USERNAME=${DB_USERNAME}" >> .env
                         echo "SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}" >> .env
-                        echo "REDIS_HOST=${REDIS_HOST}" >> .env
-                        echo "REDIS_PORT=${REDIS_PORT}" >> .env
+                        echo "SPRING_REDIS_HOST=${REDIS_HOST}" >> .env
+                        echo "SPRING_REDIS_PORT=${REDIS_PORT}" >> .env
 
                         scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${EC2_IP}:${ENV_PATH}
                     """
