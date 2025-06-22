@@ -23,12 +23,16 @@ pipeline {
                     string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
                     string(credentialsId: 'DB_USERNAME', variable: 'DB_USERNAME'),
                     string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
+                    string(credentialsId: 'REDIS_HOST', variable: 'REDIS_HOST'),
+                    string(credentialsId: 'REDIS_PORT', variable: 'REDIS_PORT'),
                 ]) {
                     sh """
                         echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" > .env
                         echo "SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8" >> .env
                         echo "SPRING_DATASOURCE_USERNAME=${DB_USERNAME}" >> .env
                         echo "SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}" >> .env
+                        echo "SPRING_REDIS_HOST=${REDIS_HOST}" >> .env
+                        echo "SPRING_REDIS_PORT=${REDIS_PORT}" >> .env
 
                         scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${EC2_IP}:${ENV_PATH}
                     """
