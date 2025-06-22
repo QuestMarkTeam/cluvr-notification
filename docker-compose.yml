@@ -18,8 +18,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - SPRING_REDIS_HOST=${REDIS_HOST}
-      - SPRING_REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     networks:
       - cluvr-net
   mongo:
@@ -36,19 +36,6 @@ services:
     networks:
       - cluvr-net
 
-  # Redis service
-  redis:
-    restart: always
-    image: redis:7.2
-    container_name: redis
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      retries: 5
-    ports:
-      - "6379:6379"
-    networks:
-      - cluvr-net
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
