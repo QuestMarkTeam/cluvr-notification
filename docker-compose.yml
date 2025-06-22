@@ -15,7 +15,7 @@ services:
     environment:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATASOURCE_URL=jdbc:mysql://$DB_HOST:$DB_PORT/$DB_NAME?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
     depends_on:
       #      mysql:
