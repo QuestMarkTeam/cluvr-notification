@@ -25,10 +25,8 @@ pipeline {
                     string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
                 ]) {
                     sh """
-                        echo "jwt.secret.key=${JWT_SECRET_KEY}" > .env
-                        echo "DB_HOST=${DB_HOST}" >> .env
-                        echo "DB_PORT=${DB_PORT}" >> .env
-                        echo "DB_NAME=${DB_NAME}" >> .env
+                        echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" > .env
+                        echo "SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8" > .env
                         echo "DB_USERNAME=${DB_USERNAME}" >> .env
                         echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
 
