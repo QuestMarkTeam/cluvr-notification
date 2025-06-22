@@ -14,12 +14,6 @@ spring:
     username: guest
     password: guest
 
-
-  spring:
-    redis:
-      host: redis
-      port: 6379
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -30,6 +24,10 @@ spring:
         use_sql_comments: true
         dialect: org.hibernate.dialect.MySQLDialect
         highlight_sql: true
+  data:
+    redis:
+      host: redis
+      port: 6379
 
 
 server:
