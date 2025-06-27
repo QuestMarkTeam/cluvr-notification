@@ -1,3 +1,7 @@
+server:
+  error:
+    include-message: always
+  port: 80
 spring:
   application:
     name: cluvr
@@ -33,10 +37,6 @@ spring:
       port: 27017
       database: cluvr
 
-
-server:
-  error:
-    include-message: always
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}

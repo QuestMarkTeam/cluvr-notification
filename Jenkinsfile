@@ -97,11 +97,11 @@ echo "✅ 새 컨테이너 실행"
 docker run -d --name ${ECR_REPO} \
     --network cluvr-net \
     --env-file ${ENV_PATH} \
-    -p 8080:8080 \
+    -p 80:8080 \
     --restart unless-stopped \
     ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
 
-echo "🎉 배포 완료: http://${EC2_IP}:8080"
+echo "🎉 배포 완료: http://${EC2_IP}"
 
 EOF
 """
