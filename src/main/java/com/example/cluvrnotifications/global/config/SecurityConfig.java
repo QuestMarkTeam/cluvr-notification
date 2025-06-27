@@ -8,28 +8,20 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import com.example.cluvrnotifications.domain.user.repository.UserRepository;
-import com.example.cluvrnotifications.global.jwt.CustomUserDetailsService;
-import com.example.cluvrnotifications.global.jwt.JwtAuthenticationFilter;
-import com.example.cluvrnotifications.global.jwt.JwtUtil;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-	private final CustomUserDetailsService customUserDetailsService;
-	private final JwtUtil jwtUtil;
-	private final UserRepository userRepository;
+
+
+	private final JwtDecoder jwtDecoder;
 
 	public SecurityConfig(
-		CustomUserDetailsService customUserDetailsService,
-		JwtUtil jwtUtil,
-		UserRepository userRepository
+		JwtDecoder jwtDecoder
 	) {
-		this.customUserDetailsService = customUserDetailsService;         // ← 추가
-		this.jwtUtil = jwtUtil;                                           // ← 추가
-		this.userRepository = userRepository;                             // ← 추가
+		this.jwtDecoder = jwtDecoder;
 	}
 
 	@Bean
@@ -45,32 +37,30 @@ public class SecurityConfig {
 		return configuration.getAuthenticationManager();
 	}
 
+
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain defaultChain(HttpSecurity http) throws
+		Exception {
 
-		http.csrf((auth) -> auth.disable());
-
-		http.formLogin((auth) -> auth.disable());
-
-		http.httpBasic((auth) -> auth.disable());
-
-		http.authorizeHttpRequests((auth) -> auth.requestMatchers("/users/signup", "/users/login", "/")
-			.permitAll()
-			.requestMatchers("/admin")
-			.hasRole("ADMIN")
-			.anyRequest()
-			.authenticated());
-
-		http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		http.userDetailsService(customUserDetailsService);
-
-		http.addFilterBefore(
-			new JwtAuthenticationFilter(jwtUtil, userRepository),
-			org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class
-		);
+		http
+			.csrf(csrf -> csrf.disable())
+			.formLogin(form -> form.disable())
+			.httpBasic(basic -> basic.disable())
+			.sessionManagement(sm ->
+				sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			)
+			.authorizeHttpRequests(auth -> auth
+				// 회원가입·로그인만 공개
+				.requestMatchers("api/auth/**", "/my-monitor/**").permitAll()
+				// /admin/** 은 ADMIN 권한 필요
+				.requestMatchers("/admin/**").hasRole("ADMIN")
+				// 그 외 모든 요청은 인증된 사용자여야 함
+				.anyRequest().authenticated()
+			).oauth2ResourceServer(oauth2 -> oauth2
+				.jwt(jwt -> jwt.decoder(jwtDecoder))
+			);
 
 		return http.build();
-
 	}
 
 }
