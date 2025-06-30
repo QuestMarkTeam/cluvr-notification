@@ -1,17 +1,17 @@
 package com.example.cluvrnotifications.global.jwt;
 
+import java.security.Key;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-
-import java.security.Key;
-import java.util.Date;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtil {
@@ -70,5 +70,11 @@ public class JwtUtil {
 		Key key = Keys.hmacShaKeyFor(keyBytes);
 
 		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+	}
+
+	public long getExpirationMillis(String token) {
+		Claims claims = parseToken(token);
+		Date expiration = claims.getExpiration();
+		return expiration.getTime();
 	}
 }

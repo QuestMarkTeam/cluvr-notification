@@ -5,6 +5,8 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.cluvrnotifications.common.annotation.Auth;
-import com.example.cluvrnotifications.common.dto.AuthUser;
 import com.example.cluvrnotifications.common.dto.PageResponseDto;
 import com.example.cluvrnotifications.domain.notification.dto.response.ReadNotificationResponseDto;
 import com.example.cluvrnotifications.domain.notification.dto.response.ReadNotificationsSettingResponseDto;
@@ -33,13 +33,13 @@ public class NotificationController {
 
 	@GetMapping
 	public ResponseEntity<BaseResponse<PageResponseDto<ReadNotificationResponseDto>>> getNotifications(
-
-		@Auth AuthUser authUser,
+		@AuthenticationPrincipal Jwt jwt,
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(required = false) Boolean isRead
 	) {
-		PageResponseDto<ReadNotificationResponseDto> result = notificationService.getNotifications(authUser.id(), page,
+		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		PageResponseDto<ReadNotificationResponseDto> result = notificationService.getNotifications(userId, page,
 			size,
 			isRead);
 		return ResponseEntity.ok(BaseResponse.success(result, ResponseCode.NOTI_FETCH_SUCCESS));
@@ -47,46 +47,51 @@ public class NotificationController {
 
 	@PatchMapping("/{id}/read")
 	public ResponseEntity<BaseResponse<Void>> readNotification(
-		@Auth AuthUser authUser,
+		@AuthenticationPrincipal Jwt jwt,
 		@PathVariable Long id
 	) {
-		notificationService.markAsRead(authUser.id(), id);
+		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		notificationService.markAsRead(userId, id);
 		return ResponseEntity.ok(BaseResponse.success(ResponseCode.NOTI_READ_SUCCESS));
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<BaseResponse<Void>> deleteNotification(
-		@Auth AuthUser authUser,
+		@AuthenticationPrincipal Jwt jwt,
 		@PathVariable Long id
 	) {
-		notificationService.deleteNotification(authUser.id(), id);
+		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		notificationService.deleteNotification(userId, id);
 		return ResponseEntity.ok(BaseResponse.success(ResponseCode.NOTI_DELETE_SUCCESS));
 	}
 
 	@PatchMapping("/settings")
 	public ResponseEntity<BaseResponse<Void>> updateSettings(
-		@Auth AuthUser authUser,
+		@AuthenticationPrincipal Jwt jwt,
 		@RequestBody Map<NotificationType, Boolean> settings
 	) {
-		notificationService.updateSettings(authUser.id(),
+		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		notificationService.updateSettings(userId,
 			settings);
 		return ResponseEntity.ok(BaseResponse.success(ResponseCode.NOTI_UPDATE_SUCCESS));
 	}
 
 	@GetMapping("/settings")
 	public ResponseEntity<BaseResponse<ReadNotificationsSettingResponseDto>> getSettings(
-		@Auth AuthUser authUser
+		@AuthenticationPrincipal Jwt jwt
 	) {
-		ReadNotificationsSettingResponseDto dto = notificationService.getSettings(authUser.id());
+		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		ReadNotificationsSettingResponseDto dto = notificationService.getSettings(userId);
 		return ResponseEntity.ok(BaseResponse.success(dto, ResponseCode.NOTI_FETCH_SUCCESS));
 	}
 
 	@GetMapping("/notifications/{id}")
 	public ResponseEntity<BaseResponse<ReadNotificationResponseDto>> getNotification(
-		@Auth AuthUser authUser,
+		@AuthenticationPrincipal Jwt jwt,
 		@PathVariable Long id
 	) {
-		ReadNotificationResponseDto dto = notificationService.getNotification(authUser.id(), id);
+		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		ReadNotificationResponseDto dto = notificationService.getNotification(userId, id);
 		return ResponseEntity.ok(BaseResponse.success(dto, ResponseCode.NOTI_FETCH_SUCCESS));
 	}
 
