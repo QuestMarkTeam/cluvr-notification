@@ -19,7 +19,6 @@ import com.example.cluvrnotifications.domain.notification.entity.Notification;
 import com.example.cluvrnotifications.domain.notification.entity.NotificationSetting;
 import com.example.cluvrnotifications.domain.notification.enums.NotificationType;
 import com.example.cluvrnotifications.domain.notification.repository.base.NotificationRepository;
-import com.example.cluvrnotifications.domain.user.repository.UserRepository;
 import com.example.cluvrnotifications.global.exception.BusinessException;
 import com.example.cluvrnotifications.global.response.ResponseCode;
 
@@ -28,7 +27,6 @@ import com.example.cluvrnotifications.global.response.ResponseCode;
 public class NotificationService {
 
 	private final NotificationRepository notificationRepository;
-	private final UserRepository userRepository;
 
 	/**
 	 * 설명: 특정 사용자의 알림 목록을 페이징하여 조회합니다.

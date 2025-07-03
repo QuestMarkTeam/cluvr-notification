@@ -3,6 +3,8 @@ package com.example.cluvrnotifications.domain.notification.controller;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,8 +40,8 @@ public class NotificationStreamController {
 	 */
 
 	@GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public SseEmitter connect(@Auth AuthUser authUser) {
-		Long userId = authUser.id();
+	public SseEmitter connect(@AuthenticationPrincipal Jwt jwt) {
+		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
 		return notificationStreamService.connect(userId);
 	}
 }

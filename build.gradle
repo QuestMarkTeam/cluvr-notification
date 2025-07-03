@@ -62,6 +62,13 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
+
+    //cognito
+    implementation platform('software.amazon.awssdk:bom:2.25.1')
+    implementation 'software.amazon.awssdk:cognitoidentityprovider'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
 }
 
 
