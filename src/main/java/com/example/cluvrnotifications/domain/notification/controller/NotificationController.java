@@ -23,6 +23,7 @@ import com.example.cluvrnotifications.domain.notification.enums.NotificationType
 import com.example.cluvrnotifications.domain.notification.service.NotificationService;
 import com.example.cluvrnotifications.global.response.BaseResponse;
 import com.example.cluvrnotifications.global.response.ResponseCode;
+import com.example.cluvrnotifications.global.util.JwtUserExtractor;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ import com.example.cluvrnotifications.global.response.ResponseCode;
 public class NotificationController {
 
 	private final NotificationService notificationService;
+	private final JwtUserExtractor jwtUserExtractor;
 
 	@GetMapping
 	public ResponseEntity<BaseResponse<PageResponseDto<ReadNotificationResponseDto>>> getNotifications(
@@ -38,19 +40,18 @@ public class NotificationController {
 		@RequestParam(defaultValue = "10") int size,
 		@RequestParam(required = false) Boolean isRead
 	) {
-		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		Long userId = jwtUserExtractor.extractUserId(jwt);
 		PageResponseDto<ReadNotificationResponseDto> result = notificationService.getNotifications(userId, page,
-			size,
-			isRead);
+			size, isRead);
 		return ResponseEntity.ok(BaseResponse.success(result, ResponseCode.NOTI_FETCH_SUCCESS));
 	}
 
 	@PatchMapping("/{id}/read")
 	public ResponseEntity<BaseResponse<Void>> readNotification(
 		@AuthenticationPrincipal Jwt jwt,
-		@PathVariable Long id
+		@PathVariable String id  // Long → String 변경
 	) {
-		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		Long userId = jwtUserExtractor.extractUserId(jwt);
 		notificationService.markAsRead(userId, id);
 		return ResponseEntity.ok(BaseResponse.success(ResponseCode.NOTI_READ_SUCCESS));
 	}
@@ -58,9 +59,9 @@ public class NotificationController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<BaseResponse<Void>> deleteNotification(
 		@AuthenticationPrincipal Jwt jwt,
-		@PathVariable Long id
+		@PathVariable String id  // Long → String 변경
 	) {
-		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		Long userId = jwtUserExtractor.extractUserId(jwt);
 		notificationService.deleteNotification(userId, id);
 		return ResponseEntity.ok(BaseResponse.success(ResponseCode.NOTI_DELETE_SUCCESS));
 	}
@@ -70,9 +71,8 @@ public class NotificationController {
 		@AuthenticationPrincipal Jwt jwt,
 		@RequestBody Map<NotificationType, Boolean> settings
 	) {
-		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
-		notificationService.updateSettings(userId,
-			settings);
+		Long userId = jwtUserExtractor.extractUserId(jwt);
+		notificationService.updateSettings(userId, settings);
 		return ResponseEntity.ok(BaseResponse.success(ResponseCode.NOTI_UPDATE_SUCCESS));
 	}
 
@@ -80,19 +80,18 @@ public class NotificationController {
 	public ResponseEntity<BaseResponse<ReadNotificationsSettingResponseDto>> getSettings(
 		@AuthenticationPrincipal Jwt jwt
 	) {
-		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		Long userId = jwtUserExtractor.extractUserId(jwt);
 		ReadNotificationsSettingResponseDto dto = notificationService.getSettings(userId);
 		return ResponseEntity.ok(BaseResponse.success(dto, ResponseCode.NOTI_FETCH_SUCCESS));
 	}
 
-	@GetMapping("/notifications/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<BaseResponse<ReadNotificationResponseDto>> getNotification(
 		@AuthenticationPrincipal Jwt jwt,
-		@PathVariable Long id
+		@PathVariable String id  // Long → String 변경
 	) {
-		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		Long userId = jwtUserExtractor.extractUserId(jwt);
 		ReadNotificationResponseDto dto = notificationService.getNotification(userId, id);
 		return ResponseEntity.ok(BaseResponse.success(dto, ResponseCode.NOTI_FETCH_SUCCESS));
 	}
-
 }

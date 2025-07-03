@@ -1,3 +1,4 @@
+# Notification 서버 설정
 server:
   error:
     include-message: always
@@ -13,7 +14,7 @@ spring:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
 
   rabbitmq:
-    host: rabbitmq
+    host: localhost
     port: 5672
     username: guest
     password: guest
@@ -29,22 +30,36 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         highlight_sql: true
   data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
     mongodb:
-      host: cluvr-mongo
+      host: localhost
       port: 27017
       database: cluvr
 
 jwt:
   secret:
-    key: ${JWT_SECRET_KEY}
+    key:
   expirationMs: 3600000
 
+# Cognito 설정
+cognito:
+  jwkSetUri: ${COGNITO_JWK_SET_URI}
+
+# AWS 설정
+cloud:
+  aws:
+    region:
+      static: ${AWS_REGION}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+
+# 로깅 설정
 logging:
   level:
     root: info
     com.example: debug
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+api:
+  server:
+    base-url : http://localhost:8080

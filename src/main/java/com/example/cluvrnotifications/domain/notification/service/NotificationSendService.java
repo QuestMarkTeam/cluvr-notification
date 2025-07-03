@@ -15,11 +15,8 @@ import com.example.cluvrnotifications.domain.notification.repository.support.Sse
  * 설명: SseEmitterRepository를 통해 연결된 유저의 SSEEmitter를 조회하고,
  * 실시간으로 알림을 전송하는 서비스
  *
- * 전송 중 예외가 발생하면 연결을 종료하고 emitter를 제거
- *
  * @author escomputer
  */
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -30,13 +27,9 @@ public class NotificationSendService {
 	/**
 	 * 설명: 유저의 SSEEmitter가 존재하면 알림을 전송
 	 *
-	 *
-	 * @param  event 알림 이벤트 객체
-	 *
+	 * @param event 알림 이벤트 객체
 	 * @return 전송 성공 여부 (true = 전송됨, false = 실패하여 저장 필요)
-	 * @author escomputer
 	 */
-
 	public boolean send(NotificationEvent event) {
 		List<SseEmitter> emitters = sseEmitterRepository.get(event.getReceiverId());
 

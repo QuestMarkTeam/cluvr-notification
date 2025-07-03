@@ -26,6 +26,8 @@ public class NotificationMongoTest {
 
 	@Autowired
 	private NotificationReceiveService notificationReceiveService;
+	@Autowired
+	private NotificationCacheRepository notificationCacheRepository;
 
 	@Test
 	void MQ_알림_이벤트가_MongoDB에_정상_저장된다() {
@@ -42,7 +44,7 @@ public class NotificationMongoTest {
 		notificationReceiveService.receive(event);
 
 		// then
-		List<NotificationDocument> list = notificationRepository.findByReceiverId(9999L);
+		List<NotificationDocument> list = notificationCacheRepository.findByReceiverId(9999L);
 		assertFalse(list.isEmpty());
 
 		NotificationDocument saved = list.get(0);

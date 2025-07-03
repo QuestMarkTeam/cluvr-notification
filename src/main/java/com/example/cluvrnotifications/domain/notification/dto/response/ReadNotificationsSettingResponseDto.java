@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 
-import com.example.cluvrnotifications.domain.notification.entity.NotificationSetting;
+import com.example.cluvrnotifications.domain.notification.entity.NotificationSettingDocument;
 
 @Getter
 public class ReadNotificationsSettingResponseDto {
@@ -16,11 +16,11 @@ public class ReadNotificationsSettingResponseDto {
 		this.settings = settings;
 	}
 
-	public static ReadNotificationsSettingResponseDto from(List<NotificationSetting> settingList) {
+	public static ReadNotificationsSettingResponseDto from(List<NotificationSettingDocument> settingList) {
 		Map<String, Boolean> result = settingList.stream()
 			.collect(Collectors.toMap(
 				s -> s.getNotificationType().name(),
-				NotificationSetting::getIsEnabled
+				NotificationSettingDocument::getIsEnabled
 			));
 		return new ReadNotificationsSettingResponseDto(result);
 	}
