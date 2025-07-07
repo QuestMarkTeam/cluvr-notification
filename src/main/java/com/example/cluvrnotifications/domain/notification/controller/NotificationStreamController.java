@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.example.cluvrnotifications.common.annotation.Auth;
 import com.example.cluvrnotifications.common.dto.AuthUser;
 import com.example.cluvrnotifications.domain.notification.service.NotificationStreamService;
+import com.example.cluvrnotifications.global.util.JwtUserExtractor;
 
 /**
  * 설명: SSE 연결 요청을 처리하고, MongoDB에 저장된 알림을 실시간으로 전송하는 컨트롤러
@@ -26,6 +27,7 @@ import com.example.cluvrnotifications.domain.notification.service.NotificationSt
 public class NotificationStreamController {
 
 	private final NotificationStreamService notificationStreamService;
+	private final JwtUserExtractor jwtUserExtractor;
 
 	/**
 	 * 설명: 클라이언트에서 SSE 연결을 요청
@@ -41,7 +43,7 @@ public class NotificationStreamController {
 
 	@GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter connect(@AuthenticationPrincipal Jwt jwt) {
-		Long userId = Long.valueOf(jwt.getClaim("custom:userId"));
+		Long userId = jwtUserExtractor.extractUserId(jwt);
 		return notificationStreamService.connect(userId);
 	}
 }

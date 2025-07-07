@@ -4,5 +4,7 @@ public enum NotiTargetType {
 	BOARD,
 	COMMENT,
 	USER,
-	APPLICATIONS
+	APPLICATIONS,
+	POINT,
+	CLUB
 }
