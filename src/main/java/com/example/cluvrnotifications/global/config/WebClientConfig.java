@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
-	@Value("localhost://8080")
+	@Value("https://api.cluvr.co.kr")
 	private String apiServerBaseUrl;
 
 	@Bean
