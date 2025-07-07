@@ -22,7 +22,8 @@ pipeline {
                     string(credentialsId: 'RMQ_HOST', variable: 'RMQ_HOST'),
                     string(credentialsId: 'RMQ_PORT', variable: 'RMQ_PORT'),
                     string(credentialsId: 'RMQ_USERNAME', variable: 'RMQ_USERNAME'),
-                    string(credentialsId: 'RMQ_PASSWORD', variable: 'RMQ_PASSWORD')
+                    string(credentialsId: 'RMQ_PASSWORD', variable: 'RMQ_PASSWORD'),
+                    string(credentialsId: 'USER_POOL_ID', variable: 'USER_POOL_ID')
                 ]) {
                     sh """
                         echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" > .env
@@ -32,6 +33,7 @@ pipeline {
                         echo "RMQ_PORT=${RMQ_PORT}" >> .env
                         echo "RMQ_USERNAME=${RMQ_USERNAME}" >> .env
                         echo "RMQ_PASSWORD=${RMQ_PASSWORD}" >> .env
+                        echo "USER_POOL_ID=${USER_POOL_ID}" >> .env
 
                         scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${EC2_IP}:${ENV_PATH}
                     """
