@@ -23,7 +23,7 @@ import com.example.cluvrnotifications.global.util.JwtUserExtractor;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/notifications")
+@RequestMapping("/notifications/stream")
 public class NotificationStreamController {
 
 	private final NotificationStreamService notificationStreamService;
