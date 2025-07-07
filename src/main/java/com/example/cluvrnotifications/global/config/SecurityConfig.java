@@ -54,8 +54,18 @@ public class SecurityConfig {
 			.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				.anyRequest().authenticated());
+				// 회원가입·로그인만 공개
+				.requestMatchers("api/auth/**", "/my-monitor/**").permitAll()
+				.requestMatchers("/notifications/stream/connect").permitAll()
+				// /admin/** 은 ADMIN 권한 필요
+				.requestMatchers("/admin/**").hasRole("ADMIN")
+				// 그 외 모든 요청은 인증된 사용자여야 함
+				.anyRequest().authenticated()
+			).oauth2ResourceServer(oauth2 -> oauth2
+				.jwt(jwt -> jwt.decoder(jwtDecoder))
+			);
+
+
 		return http.build();
 	}
 
@@ -71,8 +81,9 @@ public class SecurityConfig {
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
 
-		// SSE를 위한 추가 설정
-		configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+
+		configuration.setExposedHeaders(List.of("*"));
+
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
