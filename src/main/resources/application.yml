@@ -2,7 +2,7 @@
 server:
   error:
     include-message: always
-  port: 80
+  port: 8082
 spring:
   application:
     name: cluvr
