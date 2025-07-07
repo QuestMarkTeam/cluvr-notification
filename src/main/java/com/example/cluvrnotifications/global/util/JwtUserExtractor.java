@@ -1,6 +1,7 @@
 package com.example.cluvrnotifications.global.util;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import com.example.cluvrnotifications.external.client.ApiServerClient;
  * @author escomputer
  */
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class JwtUserExtractor {
 
@@ -31,6 +33,7 @@ public class JwtUserExtractor {
 	public Long extractUserId(Jwt jwt) {
 		// JWT에서 sub 추출 후 API 서버에서 userId 조회
 		String sub = jwt.getSubject();
+		log.debug("JWT Sub: {}", sub); // sub 값 출력하여 올바르게 추출되는지 확인
 		return apiServerClient.getUserIdBySub(sub);
 	}
 }

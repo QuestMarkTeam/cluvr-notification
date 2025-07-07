@@ -1,6 +1,7 @@
 package com.example.cluvrnotifications.domain.notification.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,6 +23,7 @@ import com.example.cluvrnotifications.global.util.JwtUserExtractor;
  *
  * @author escomputer
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notifications/stream")
@@ -48,6 +50,8 @@ public class NotificationStreamController {
 
 	@GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter connect(@AuthenticationPrincipal Jwt jwt) {
+		log.info("connect 시작");
+		log.info(String.valueOf(jwt));
 		Long userId = jwtUserExtractor.extractUserId(jwt);
 		return notificationStreamService.connect(userId);
 	}

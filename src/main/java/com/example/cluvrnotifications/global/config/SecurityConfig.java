@@ -72,7 +72,7 @@ public class SecurityConfig {
 		configuration.setAllowCredentials(true);
 
 		// SSE를 위한 추가 설정
-		configuration.setExposedHeaders(List.of("*"));
+		configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
