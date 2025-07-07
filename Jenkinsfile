@@ -23,6 +23,9 @@ pipeline {
                     string(credentialsId: 'RMQ_PORT', variable: 'RMQ_PORT'),
                     string(credentialsId: 'RMQ_USERNAME', variable: 'RMQ_USERNAME'),
                     string(credentialsId: 'RMQ_PASSWORD', variable: 'RMQ_PASSWORD'),
+                    string(credentialsId: 'ACCESS_AWS', variable: 'ACCESS_AWS'),
+                    string(credentialsId: 'SECRET_AWS', variable: 'SECRET_AWS'),
+
                     string(credentialsId: 'USER_POOL_ID', variable: 'USER_POOL_ID')
                 ]) {
                     sh """
@@ -31,6 +34,8 @@ pipeline {
                         echo "REDIS_PORT=${REDIS_PORT}" >> .env
                         echo "RMQ_HOST=${RMQ_HOST}" >> .env
                         echo "RMQ_PORT=${RMQ_PORT}" >> .env
+                        echo "ACCESS_AWS=${ACCESS_AWS}" >> .env
+                        echo "SECRET_AWS=${SECRET_AWS}" >> .env
                         echo "RMQ_USERNAME=${RMQ_USERNAME}" >> .env
                         echo "RMQ_PASSWORD=${RMQ_PASSWORD}" >> .env
                         echo "USER_POOL_ID=${USER_POOL_ID}" >> .env

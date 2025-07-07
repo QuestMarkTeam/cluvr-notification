@@ -34,10 +34,10 @@ cognito:
 cloud:
   aws:
     region:
-      static: ${AWS_REGION}
+      static: us-west-2
     credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
+      access-key: ${ACCESS_AWS}
+      secret-key: ${SECRET_AWS}
 
 # 로깅 설정
 logging:
