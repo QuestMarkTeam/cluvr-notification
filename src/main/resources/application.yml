@@ -42,8 +42,12 @@ cloud:
 # 로깅 설정
 logging:
   level:
-    root: info
-    com.example: debug
+    root: INFO
+    software.amazon.awssdk: DEBUG
+    software.amazon.awssdk.auth: DEBUG
+    com.amazonaws: DEBUG
+    com.example.cluvrapi: DEBUG
+
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
