@@ -3,6 +3,7 @@ package com.example.cluvrnotifications.domain.notification.controller;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,6 +29,7 @@ import com.example.cluvrnotifications.global.util.JwtUserExtractor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notifications")
+@Slf4j
 public class NotificationController {
 
 	private final NotificationService notificationService;
@@ -41,6 +43,7 @@ public class NotificationController {
 		@RequestParam(required = false) Boolean isRead
 	) {
 		Long userId = jwtUserExtractor.extractUserId(jwt);
+		log.info("이ㅏㅁ널이ㅏㅁ너ㅗ라;ㅣㄴㅇ머라;ㅣㅁㄴ어라ㅣ;ㅁㄴ어ㅏ;리ㅓㄴㅇ마;ㅐㅣ");
 		PageResponseDto<ReadNotificationResponseDto> result = notificationService.getNotifications(userId, page,
 			size, isRead);
 		return ResponseEntity.ok(BaseResponse.success(result, ResponseCode.NOTI_FETCH_SUCCESS));

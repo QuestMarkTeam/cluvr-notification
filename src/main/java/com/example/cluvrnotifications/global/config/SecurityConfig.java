@@ -2,6 +2,7 @@ package com.example.cluvrnotifications.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,12 +48,11 @@ public class SecurityConfig {
 		Exception {
 
 		http
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+			.securityMatcher("/api/**", "/notifications/**")
 			.csrf(csrf -> csrf.disable())
-			.formLogin(form -> form.disable())
-			.httpBasic(basic -> basic.disable())
-			.sessionManagement(sm ->
-				sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-			)
+			.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
 			.authorizeHttpRequests(auth -> auth
 				// 회원가입·로그인만 공개
 				.requestMatchers("api/auth/**", "/my-monitor/**").permitAll()
@@ -64,6 +64,7 @@ public class SecurityConfig {
 			).oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.decoder(jwtDecoder))
 			);
+
 
 		return http.build();
 	}
@@ -80,8 +81,9 @@ public class SecurityConfig {
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
 
-		// SSE를 위한 추가 설정
+
 		configuration.setExposedHeaders(List.of("*"));
+
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
