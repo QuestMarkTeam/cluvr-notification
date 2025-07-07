@@ -12,27 +12,26 @@ pipeline {
     }
 
     stages {
-
         stage('Create .env & Send to EC2') {
             steps {
                 echo '✅ Generating .env and sending to EC2...'
                 withCredentials([
                     string(credentialsId: 'JWT_SECRET_KEY', variable: 'JWT_SECRET_KEY'),
-                    string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
-                    string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
-                    string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
-                    string(credentialsId: 'DB_USERNAME', variable: 'DB_USERNAME'),
-                    string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
                     string(credentialsId: 'REDIS_HOST', variable: 'REDIS_HOST'),
                     string(credentialsId: 'REDIS_PORT', variable: 'REDIS_PORT'),
+                    string(credentialsId: 'RMQ_HOST', variable: 'RMQ_HOST'),
+                    string(credentialsId: 'RMQ_PORT', variable: 'RMQ_PORT'),
+                    string(credentialsId: 'RMQ_USERNAME', variable: 'RMQ_USERNAME'),
+                    string(credentialsId: 'RMQ_PASSWORD', variable: 'RMQ_PASSWORD')
                 ]) {
                     sh """
                         echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" > .env
-                        echo "SPRING_DATASOURCE_URL=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8" >> .env
-                        echo "SPRING_DATASOURCE_USERNAME=${DB_USERNAME}" >> .env
-                        echo "SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}" >> .env
                         echo "REDIS_HOST=${REDIS_HOST}" >> .env
                         echo "REDIS_PORT=${REDIS_PORT}" >> .env
+                        echo "RMQ_HOST=${RMQ_HOST}" >> .env
+                        echo "RMQ_PORT=${RMQ_PORT}" >> .env
+                        echo "RMQ_USERNAME=${RMQ_USERNAME}" >> .env
+                        echo "RMQ_PASSWORD=${RMQ_PASSWORD}" >> .env
 
                         scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa .env ubuntu@${EC2_IP}:${ENV_PATH}
                     """
@@ -40,71 +39,107 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Checkout SCM') {
             steps {
-                echo '✅ Building Docker image...'
-                sh "docker build -t ${MODULE}:latest ."
+                cleanWs()
+                echo "✅ Checking out source code from GitHub..."
+                checkout scm
             }
         }
 
-        stage('Push to ECR') {
-            steps {
-                echo '✅ Logging in to ECR...'
-                sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
-                echo '✅ Tag and push to ECR...'
-                sh """
-                    docker tag ${MODULE}:latest ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
-                    docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
-                """
+        stage('Build & Deploy only if on develop branch') {
+            when {
+                branch 'develop'
             }
-        }
 
-        stage('Deploy to EC2') {
             steps {
-                echo '✅ Deploying on remote EC2...'
-                sh """
-ssh -o StrictHostKeyChecking=no -i /var/lib/jenkins/.ssh/id_rsa ubuntu@${EC2_IP} << 'EOF'
+                echo "✅ Deploying develop branch build..."
 
-echo "✅ Docker 네트워크 cluvr-net 확인"
-docker network create cluvr-net 2>/dev/null || echo "already exists"
+                script {
+                    sh '''
+                    docker build -t $ECR_REPO:$IMAGE_TAG .
+                    docker tag $ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+                    '''
+                }
 
-echo "✅ MongoDB 실행"
-if [ -z "\$(docker ps -q -f name=cluvr-mongo)" ]; then
-    docker run -d --name cluvr-mongo --network cluvr-net -p 27017:27017 --restart unless-stopped mongo:6.0
-else
-    echo "Mongo already running"
-fi
+                script {
+                    sh '''
+                    aws ecr get-login-password --region $AWS_REGION \
+                        | docker login --username AWS --password-stdin $ECR_REGISTRY
+                    docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+                    '''
+                }
 
-echo "✅ RabbitMQ 실행"
-if [ -z "\$(docker ps -q -f name=rabbitmq)" ]; then
-    docker run -d --name rabbitmq --network cluvr-net -p 5672:5672 -p 15672:15672 --restart unless-stopped \
-        -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest rabbitmq:3-management
-else
-    echo "RabbitMQ already running"
-fi
+                script {
+                    // 포트 점유 체크 (80 포트 기준)
+                    sh '''
+                    ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$EC2_IP '
+                        if lsof -i:80 -sTCP:LISTEN -t >/dev/null; then
+                            echo "❌ 포트 80 이미 사용 중 - 배포 중단"; exit 1;
+                        fi
+                    '
+                    '''
 
-echo "✅ ECR 로그인"
-aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                    // SSH 호스트 키 등록
+                    sh '''
+                    ssh-keyscan -H $EC2_IP >> ~/.ssh/known_hosts
+                    '''
 
-echo "✅ 최신 Docker 이미지 pull"
-docker pull ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+                    // Docker 네트워크 생성
+                    sh '''
+                    ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$EC2_IP "docker network create cluvr-net 2>/dev/null || echo 'Network already exists'"
+                    '''
 
-echo "✅ 기존 컨테이너 중지 및 제거"
-docker stop ${ECR_REPO} || true
-docker rm ${ECR_REPO} || true
+                    // RabbitMQ만 실행
+                    sh '''
+                    ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$EC2_IP '
+                        echo "🔍 RabbitMQ 상태 확인 중..."
+                        if [ -z "$(docker ps -q -f name=rabbitmq)" ]; then
+                            echo "📦 RabbitMQ 시작 중..."
+                            docker run -d --name rabbitmq --network cluvr-net -p 5672:5672 -p 15672:15672 --restart unless-stopped \
+                                -e RABBITMQ_DEFAULT_USER=${RMQ_USERNAME} \
+                                -e RABBITMQ_DEFAULT_PASS=${RMQ_PASSWORD} \
+                                rabbitmq:3-management
+                        else
+                            echo "✅ RabbitMQ 이미 실행 중 - 스킵"
+                        fi
+                    '
+                    '''
 
-echo "✅ 새 컨테이너 실행"
-docker run -d --name ${ECR_REPO} \
-    --network cluvr-net \
-    --env-file ${ENV_PATH} \
-    -p 80:8080 \
-    --restart unless-stopped \
-    ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+                    // 기존 앱 중지 및 제거
+                    sh '''
+                    ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$EC2_IP "
+                        docker stop $ECR_REPO 2>/dev/null || true
+                        docker rm $ECR_REPO 2>/dev/null || true
+                    "
+                    '''
 
-echo "🎉 배포 완료: http://${EC2_IP}"
+                    // 최신 이미지 pull
+                    sh '''
+                    ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$EC2_IP "
+                        aws ecr get-login-password --region $AWS_REGION \
+                            | docker login --username AWS --password-stdin $ECR_REGISTRY
+                        docker pull $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+                    "
+                    '''
 
-EOF
-"""
+                    // 앱 실행
+                    sh '''
+                    ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$EC2_IP "
+                        docker run -d --name $ECR_REPO \
+                            --network host \
+                            --env-file ${ENV_PATH} \
+                            --log-driver json-file \
+                            --log-opt max-size=10m \
+                            --log-opt max-file=3 \
+                            --restart unless-stopped \
+                            $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+
+                        echo '🎉 배포 완료! 앱이 실행 중입니다.'
+                        echo '📍 접속 주소: http://$EC2_IP'
+                    "
+                    '''
+                }
             }
         }
     }
