@@ -71,14 +71,6 @@ pipeline {
                 }
 
                 script {
-                    // 포트 점유 체크 (80 포트 기준)
-                    sh '''
-                    ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$EC2_IP '
-                        if lsof -i:80 -sTCP:LISTEN -t >/dev/null; then
-                            echo "❌ 포트 80 이미 사용 중 - 배포 중단"; exit 1;
-                        fi
-                    '
-                    '''
 
                     // SSH 호스트 키 등록
                     sh '''
