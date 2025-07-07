@@ -62,3 +62,4 @@ logging:
 api:
   server:
     base-url : http://localhost:8080
+
