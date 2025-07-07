@@ -2,8 +2,6 @@
 server:
   error:
     include-message: always
-  port: 8082
-
 spring:
   application:
     name: cluvr
@@ -49,4 +47,4 @@ logging:
 
 api:
   server:
-    base-url: http://localhost:8080
+    base-url : http://localhost:8080
