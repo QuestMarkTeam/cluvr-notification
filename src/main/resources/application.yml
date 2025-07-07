@@ -27,7 +27,8 @@ jwt:
 
 # Cognito 설정
 cognito:
-  jwkSetUri: ${COGNITO_JWK_SET_URI}
+  userPoolId: ${USER_POOL_ID}
+  jwkSetUri: https://cognito-idp.us-west-2.amazonaws.com/${USER_POOL_ID}/.well-known/jwks.json
 
 # AWS 설정
 cloud:
