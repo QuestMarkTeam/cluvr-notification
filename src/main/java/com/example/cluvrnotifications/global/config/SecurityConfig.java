@@ -56,6 +56,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				// 회원가입·로그인만 공개
 				.requestMatchers("api/auth/**", "/my-monitor/**").permitAll()
+				.requestMatchers("/notifications/connect").permitAll()
 				// /admin/** 은 ADMIN 권한 필요
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				// 그 외 모든 요청은 인증된 사용자여야 함
@@ -70,10 +71,17 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("https://cluvr.co.kr")); // ← 프론트 도메인
+		// 메인 도메인 추가
+		configuration.setAllowedOrigins(List.of(
+			"https://cluvr.co.kr",
+			"https://www.cluvr.co.kr"  // www 서브도메인도 추가
+		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
+
+		// SSE를 위한 추가 설정
+		configuration.setExposedHeaders(List.of("*"));
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
