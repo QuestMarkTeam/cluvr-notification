@@ -4,16 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.example.cluvrnotifications.common.annotation.Auth;
-import com.example.cluvrnotifications.common.dto.AuthUser;
 import com.example.cluvrnotifications.domain.notification.service.NotificationStreamService;
 import com.example.cluvrnotifications.global.util.JwtUserExtractor;
 
@@ -35,6 +34,7 @@ public class NotificationStreamController {
 
 	private final NotificationStreamService notificationStreamService;
 	private final JwtUserExtractor jwtUserExtractor;
+	private final JwtDecoder jwtDecoder;
 
 	/**
 	 * 설명: 클라이언트에서 SSE 연결을 요청
@@ -49,10 +49,12 @@ public class NotificationStreamController {
 	 */
 
 	@GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public SseEmitter connect(@AuthenticationPrincipal Jwt jwt) {
-		log.info("connect 시작");
-		log.info(String.valueOf(jwt));
+	public SseEmitter connect(@RequestParam String token
+	) {
+		Jwt jwt = jwtDecoder.decode(token); // Cognito의 JWK를 기반으로
 		Long userId = jwtUserExtractor.extractUserId(jwt);
 		return notificationStreamService.connect(userId);
 	}
 }
+
+

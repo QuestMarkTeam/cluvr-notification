@@ -43,7 +43,6 @@ public class NotificationController {
 		@RequestParam(required = false) Boolean isRead
 	) {
 		Long userId = jwtUserExtractor.extractUserId(jwt);
-		log.info("이ㅏㅁ널이ㅏㅁ너ㅗ라;ㅣㄴㅇ머라;ㅣㅁㄴ어라ㅣ;ㅁㄴ어ㅏ;리ㅓㄴㅇ마;ㅐㅣ");
 		PageResponseDto<ReadNotificationResponseDto> result = notificationService.getNotifications(userId, page,
 			size, isRead);
 		return ResponseEntity.ok(BaseResponse.success(result, ResponseCode.NOTI_FETCH_SUCCESS));
