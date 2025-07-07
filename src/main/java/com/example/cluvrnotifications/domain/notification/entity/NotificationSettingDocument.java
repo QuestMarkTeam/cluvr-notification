@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.cluvrnotifications.domain.notification.enums.NotificationType;
@@ -14,6 +15,7 @@ import com.example.cluvrnotifications.domain.notification.enums.NotificationType
  * @author escomputer
  */
 @Document(collection = "notification_settings")
+@CompoundIndex(def = "{'userId': 1, 'notificationType': 1}", unique = true)
 @Getter
 @NoArgsConstructor
 public class NotificationSettingDocument {
