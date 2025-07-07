@@ -62,10 +62,17 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("https://cluvr.co.kr")); // ← 프론트 도메인
+		// 메인 도메인 추가
+		configuration.setAllowedOrigins(List.of(
+			"https://cluvr.co.kr",
+			"https://www.cluvr.co.kr"  // www 서브도메인도 추가
+		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
+
+		// SSE를 위한 추가 설정
+		configuration.setExposedHeaders(List.of("*"));
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
