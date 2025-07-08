@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.RequiredArgsConstructor;
@@ -152,5 +153,19 @@ public class NotificationListenerManager {
 			}
 		}
 		return 0;
+	}
+
+
+	public void createQueueIfNotExists(Long userId) {
+		String queueName = "user." + userId;
+
+		Properties props = amqpAdmin.getQueueProperties(queueName);
+		if (props != null) {
+			log.debug("이미 존재하는 큐: {}", queueName);
+			return;
+		}
+
+		createQueueAndBinding(queueName);
+		log.info("큐 생성 완료: {}", queueName);
 	}
 }

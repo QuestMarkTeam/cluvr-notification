@@ -55,6 +55,7 @@ public class SecurityConfig {
 			.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
 			.authorizeHttpRequests(auth -> auth
 				// 회원가입·로그인만 공개
+				.requestMatchers("/notifications/queue/init").permitAll()
 				.requestMatchers("api/auth/**", "/my-monitor/**").permitAll()
 				.requestMatchers("/notifications/stream/connect").permitAll()
 				// /admin/** 은 ADMIN 권한 필요
